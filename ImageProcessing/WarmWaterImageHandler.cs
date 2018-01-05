@@ -7,6 +7,7 @@ using System.Linq;
 using Common;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using System.Configuration;
 
 namespace ImageProcessing
 {
@@ -21,19 +22,81 @@ namespace ImageProcessing
 				eventLog.Source = _eventSource;
 				eventLog.WriteEntry("starting doimageproc",EventLogEntryType.Information);
 			}
-			return TestRotation(fileToProcess);
+			var foundImage = ExtractMeterImage(fileToProcess);
+			if (foundImage == null) return null;
+			return TestRotation(foundImage,fileToProcess);
 		}
 
-		private IImageData TestRotation(string fileToProcess)
+		private Image<Bgr,byte> ExtractMeterImage(string fileToProcess)
 		{
-			var applicationPath = System.AppDomain.CurrentDomain.BaseDirectory;
-			var pathToTemplate =Path.Combine(applicationPath, "Templates","KorrektNaalMedGraatt.jpg");
-			//var pathToTemplate = Path.Combine(Environment.CurrentDirectory, "Templates", "KorrektNaalMedGraatt.jpg");
-			using (EventLog eventLog = new EventLog(_eventLog))
+
+
+			Image<Bgr, byte> imageToReturn = null;
+			var filepathToTemplate = GetImageWithFullPath("MaalerMal");
+			try
 			{
-				eventLog.Source = _eventSource;
-				eventLog.WriteEntry("path to template rotation "+ pathToTemplate, EventLogEntryType.Information);
+				Image<Bgr, byte> source = new Image<Bgr, byte>(fileToProcess);
+				Image<Bgr, byte> template = new Image<Bgr, byte>(filepathToTemplate);
+				ShowImage(source);
+				ShowImage(template);
+				using (Image<Gray, float> result = source.MatchTemplate(template, Emgu.CV.CvEnum.TemplateMatchingType.Ccoeff))
+				{
+					//Image<Gray, float> resultImage = result.Mul(resultMask.Pow(-1));
+					double[] minValues, maxValues;
+					Point[] minLocations, maxLocations;
+					result.MinMax(out minValues, out maxValues, out minLocations, out maxLocations);
+
+					// You can try different values of the threshold. I guess somewhere between 0.75 and 0.95 would be good.
+					if (maxValues[0] > 0.9)
+					{
+						// This is a match. Do something with it, for example draw a rectangle around it.
+						Rectangle match = new Rectangle(maxLocations[0], template.Size);
+						var smallImage = CreateSmallImage(match, source, template.Size);
+
+						//Try to export the inside image without the borders
+						//smallImage.ROI = new Rectangle(24, 22, 300, 54);
+						imageToReturn = smallImage.Copy();
+					}
+				}
+
 			}
+			catch (Exception ex)
+			{
+				Debug.Print(ex.Message);
+				return null;
+			}
+			ShowImage(imageToReturn);
+			return imageToReturn;
+		}
+
+		private static void ShowImage(Image<Bgr, byte> imageToReturn)
+		{
+			return;
+			CvInvoke.Imshow("extract", imageToReturn);
+			CvInvoke.WaitKey(0);
+		}
+
+		private Image<Bgr, byte> CreateSmallImage(Rectangle match, Image<Bgr, byte> imageToShow, Size size)
+		{
+			imageToShow.ROI = match;
+			return imageToShow.Copy();
+		}
+
+
+		private string GetImageWithFullPath(string appsettingKey)
+		{
+			var foundAppsetting = ConfigurationManager.AppSettings[appsettingKey];
+			if(string.IsNullOrEmpty(foundAppsetting)) throw new ConfigurationErrorsException($"Key not found ({appsettingKey})");
+
+			var applicationPath = System.AppDomain.CurrentDomain.BaseDirectory;
+			return Path.Combine(applicationPath, "Templates", foundAppsetting);
+		}
+
+		private IImageData TestRotation(Image<Bgr,byte> imageToProcess, string fileToProcess)
+		{
+		
+			var pathToTemplate =  GetImageWithFullPath("NaalMal");
+			
 
 			var templateImage = new Image<Bgr, byte>(pathToTemplate);
 			var listOfResults = new List<ImageResult>();
@@ -54,7 +117,7 @@ namespace ImageProcessing
 				var rotatedtemplateImage = templateImage.Rotate(rotationToUse, new Bgr(Color.Gray));
 				//CvInvoke.Imshow("rotation", templateImage);
 				//CvInvoke.WaitKey(0);
-				var imgResult = TryToMatchRotation(fileToProcess,
+				var imgResult = TryToMatchRotation(imageToProcess,
 					rotatedtemplateImage, rotationToUse);
 				listOfResults.Add(imgResult);
 				rotation++;
@@ -78,12 +141,12 @@ namespace ImageProcessing
 			};
 		}
 
-		public ImageResult TryToMatchRotation(string filepathImageToSearch, Image<Bgr, byte> templateImage, int degreesOfRotation)
+		public ImageResult TryToMatchRotation(Image<Bgr, byte> source, Image<Bgr, byte> templateImage, int degreesOfRotation)
 		{
 			//public ImageResult TryToMatch(string filepathImageToSearch, Image<Bgr, byte> templateImage, string filepathTemplate = null, int degreesOfRotation = 0)
 
 			var imgResult = new ImageResult() { Rotation = degreesOfRotation };
-			Image<Bgr, byte> source = new Image<Bgr, byte>(filepathImageToSearch); // Image B
+			//Image<Bgr, byte> source = new Image<Bgr, byte>(filepathImageToSearch); // Image B
 
 			Image<Bgr, byte> template = null;
 			if (templateImage != null) template = templateImage;

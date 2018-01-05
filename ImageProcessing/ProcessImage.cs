@@ -36,7 +36,7 @@ namespace ImageProcessing
 			//{
 			// dbStore.StoreFileInBlackList(fileToProcess.Filepath);
 			//}
-			if (lastResult.ProcessingResult == ProcessingResultType.Ok)
+			if (lastResult!=null && lastResult.ProcessingResult == ProcessingResultType.Ok)
 			{
 
 				dbStore.SaveData(lastResult);
