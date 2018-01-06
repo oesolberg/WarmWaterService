@@ -1,12 +1,12 @@
-using system;
-using system.collections.generic;
-using system.io;
-using system.io.compression;
-using system.linq;
-using system.net;
-using system.text;
-using system.threading.tasks;
-using system.xml;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml;
 
 
 	
@@ -17,7 +17,7 @@ public void Main(object[] Parms)
 	LogToHomeseer("Start WarmWater script" );
 	string cachebash=DateTime.Now.ToString("yyyyMMddHHmmss");
 	System.Net.WebRequest webRequest = System.Net.WebRequest.Create(@"http://localhost:1234/?cachebash="+cachebash);
-	webRequest.Headers.Set(HttpRequestHeader.CacheControl, "max-age=0, no-cache, no-store");
+	webRequest.Headers.Set(System.Net.HttpRequestHeader.CacheControl, "max-age=0, no-cache, no-store");
 	System.IO.Stream content;
 	System.Net.WebResponse response = webRequest.GetResponse();
 	if (((System.Net.HttpWebResponse)response).ContentEncoding	=="gzip")
@@ -44,7 +44,7 @@ public void Main(object[] Parms)
 	
 }
 
-public void UpdateHomeSeerDevices(List<string> formattedData)
+public void UpdateHomeSeerDevices(System.Collections.Generic.List<string> formattedData)
 {
 		SetHsDevice(265,formattedData[1]);
 		SetHsDevice(266,formattedData[0]);
@@ -73,11 +73,11 @@ public int ConvertStringToInt(string intValueAsString)
 	return returnValue;
 }
 
-public List<string> SplitContent(string lineOfText)
+public System.Collections.Generic.List<string> SplitContent(string lineOfText)
 {
-	var resultList=new List<string>();
+	var resultList=new System.Collections.Generic.List<string>();
 	var splitBySemiColon=lineOfText.Split(';');
-	if(splitBySemiColon.Length<2) return new List<string>();
+	if(splitBySemiColon.Length<2) return new System.Collections.Generic.List<string>();
 	
 	foreach(var stringFragment in splitBySemiColon)
 	{
