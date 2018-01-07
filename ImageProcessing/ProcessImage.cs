@@ -28,7 +28,8 @@ namespace ImageProcessing
 			{
 				lastResult = RunFileToProcess(fileToProcess);
 				numberOfRetries++;
-			} while (numberOfRetries < 3 && lastResult.ProcessingResult == ProcessingResultType.Cancelled);
+			} while (numberOfRetries < 3 && lastResult
+			!=null && lastResult.ProcessingResult == ProcessingResultType.Cancelled);
 
 
 			//if ((numberOfRetries > 2 && lastResult.ProcessingResult == ProcessingResultType.Cancelled) ||
