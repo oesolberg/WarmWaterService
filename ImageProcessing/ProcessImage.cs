@@ -30,13 +30,7 @@ namespace ImageProcessing
 				numberOfRetries++;
 			} while (numberOfRetries < 3 && lastResult
 			!=null && lastResult.ProcessingResult == ProcessingResultType.Cancelled);
-
-
-			//if ((numberOfRetries > 2 && lastResult.ProcessingResult == ProcessingResultType.Cancelled) ||
-			//    (lastResult.ProcessingResult == ProcessingResultType.NoImageFound))
-			//{
-			// dbStore.StoreFileInBlackList(fileToProcess.Filepath);
-			//}
+			
 			if (lastResult!=null && lastResult.ProcessingResult == ProcessingResultType.Ok)
 			{
 
@@ -60,7 +54,7 @@ namespace ImageProcessing
 			}
 			else
 			{
-				// it did not finish within 6 seconds
+				// it did not finish within allotted time
 				cts.Cancel();
 				return new CommonImageData() { ProcessingResult = ProcessingResultType.Cancelled };
 

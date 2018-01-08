@@ -23,7 +23,7 @@ namespace ImageProcessing
 				eventLog.WriteEntry("starting doimageproc",EventLogEntryType.Information);
 			}
 			var foundImage = ExtractMeterImage(fileToProcess);
-			if (foundImage == null) return null;
+			if (foundImage == null) return new CommonImageData(){ProcessingResult = ProcessingResultType.NoImageFound};
 			return TestRotation(foundImage,fileToProcess);
 		}
 
