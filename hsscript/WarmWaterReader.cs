@@ -14,6 +14,16 @@ string _logName="WarmWaterScript";
 
 public void Main(object[] Parms)
 {
+	
+	int RotationMeterDevice=265;
+	int ProbabilityDevice=266;
+	int FileDateDevice=267;
+	
+	int RotationIndex=1;
+	int ProbabillityIndex=0;
+	int FileDateIndex=2;
+	
+	
 	LogToHomeseer("Start WarmWater script" );
 	string cachebash=DateTime.Now.ToString("yyyyMMddHHmmss");
 	System.Net.WebRequest webRequest = System.Net.WebRequest.Create(@"http://localhost:1234/?cachebash="+cachebash);
@@ -46,9 +56,9 @@ public void Main(object[] Parms)
 
 public void UpdateHomeSeerDevices(System.Collections.Generic.List<string> formattedData)
 {
-		SetHsDevice(265,formattedData[1]);
-		SetHsDevice(266,formattedData[0]);
-		SetHsDevice(267,formattedData[2]);
+		SetHsDevice(RotationMeterDevice,formattedData[RotationIndex]);
+		SetHsDevice(ProbabilityDevice,formattedData[ProbabillityIndex]);
+		SetHsDevice(FileDateDevice,formattedData[FileDateIndex]);
 		
 }
 
@@ -56,7 +66,7 @@ public void SetHsDevice(int deviceNumber, string valueToUpdateTo)
 {
 	
 	hs.SetDeviceString(deviceNumber,valueToUpdateTo,true);
-	if(deviceNumber==265)
+	if(deviceNumber==RotationMeterDevice)
 	{
 		var intValue=ConvertStringToInt(valueToUpdateTo);
 		hs.SetDeviceValueByRef(deviceNumber,intValue,true);	
