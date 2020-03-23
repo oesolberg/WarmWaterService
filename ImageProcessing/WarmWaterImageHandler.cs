@@ -15,6 +15,7 @@ namespace ImageProcessing
 	{
 		private readonly string _eventSource = "WarmWaterFacade";
 		private readonly string _eventLog = "WarmWaterService";
+		private readonly string _currentEvaluatedImagePathSetting = "CurrentImageSavePath";
 		public IImageData DoImageProcessing(string fileToProcess)
 		{
 			using (EventLog eventLog = new EventLog(_eventLog))
@@ -53,7 +54,7 @@ namespace ImageProcessing
 						// This is a match. Do something with it, for example draw a rectangle around it.
 						Rectangle match = new Rectangle(maxLocations[0], template.Size);
 						var smallImage = CreateSmallImage(match, source, template.Size);
-
+						ShowImage(smallImage);
 						//Try to export the inside image without the borders
 						//smallImage.ROI = new Rectangle(24, 22, 300, 54);
 						imageToReturn = smallImage.Copy();
@@ -67,7 +68,29 @@ namespace ImageProcessing
 				return null;
 			}
 			ShowImage(imageToReturn);
+			SaveSmallImageToDisk(imageToReturn);
 			return imageToReturn;
+		}
+
+		private void SaveSmallImageToDisk(Image<Bgr, byte> image)
+		{
+			var currentEvaluatedImageSavePath = ConfigurationManager.AppSettings[_currentEvaluatedImagePathSetting];
+			CreateDirectoryIfMissing(currentEvaluatedImageSavePath);
+			if (File.Exists(currentEvaluatedImageSavePath))
+			{
+				File.Delete(currentEvaluatedImageSavePath);
+			}
+			image.Save(currentEvaluatedImageSavePath);
+		}
+
+		private void CreateDirectoryIfMissing(string currentEvaluatedImageSavePath)
+		{
+			var directory= Path.GetDirectoryName(currentEvaluatedImageSavePath);// GetFullPath(currentEvaluatedImageSavePath);
+			var path = Path.GetFullPath(directory);
+			if (!Directory.Exists(path))
+			{
+				Directory.CreateDirectory(path);
+			}
 		}
 
 		private static void ShowImage(Image<Bgr, byte> imageToReturn)

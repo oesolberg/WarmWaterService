@@ -11,8 +11,6 @@ namespace ImageProcessing
 {
 	public class ProcessImage
 	{
-
-
 		public void Execute(string filePath)
 		{
 			CutAfterFiveMinutesAndThreeRetries(filePath);
